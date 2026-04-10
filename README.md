@@ -1,165 +1,168 @@
-# Agora Voice AI Hackathon Singapore 2026
+# Tokai — AI Tutoring Platform
 
-**Friday, April 10, 2026**
+> *Where every student gets a brilliant tutor who draws, listens, and adapts in real time.*
 
-Building Real-Time Voice AI Systems used to feel complex. Now you can prototype faster with AI-assisted development workflows and real-time voice tools. Use Agora SDK and API to build real-time, low-latency Voice AI solutions.
+Tokai is an accessibility-first AI tutoring platform powered by Agora Conversational AI and Gemini. A Socratic voice tutor teaches on a live whiteboard, understands hand gestures, and builds a visual concept map as the lesson unfolds — giving every student the experience of a one-on-one private tutor.
 
-**Event Details**
+Built at the **Agora Voice AI Hackathon Singapore 2026**.
 
-- Venue: Carousell Campus (Regional HQ)
-- Format: In-person, single-day event
-- Team Size: 2 to 4 members per team
-- Registration: <https://luma.com/89t0ejof>
+---
 
-**Prizes Worth SGD 4,200 (including Cash and Credits):**
+## Screenshots
 
-- ​Grand Prize: **S$ 1,000 Cash**, and **S$ 1280** worth of Credits
-- ​2nd Prize: **S$500 Cash**, and **S$ 640** worth of Credits
-- ​3rd Prize: **S$ 300 Cash**, and **S$ 385** worth of Credits
+**Onboarding — connect your AI tutor and start a session**
 
-**Event Schedule**
+![Tokai onboarding screen showing Start Learning Session](./images/tokai-onboarding.jpeg)
 
-- 9:00 AM to 9:15 AM — Registration and Check-in, badge distribution, team confirmations, seating.
-- 9:15 AM to 9:30 AM — Opening Ceremony, welcome remarks, event overview, partner introductions.
-- 9:30 AM to 9:55 AM — Create Your Own Talking Avatar with Vibe Coding (Agora × TRAE × Akool)
-- 9:55 AM to 10:15 AM — Introducing TRAE and What's New
-- 10:15 AM to 12:00 PM — Hackathon Begins, Build Phase 1 🧑‍💻🚀, teams start building with the required tech stack.
-- 12:00 PM to 12:30 PM — Working Lunch Break 🍽️, Lunch will be distributed.
-- 12:30 PM to 3:30 PM — Build Phase 2, Deep Work 🔧💡, continue building and technical support.
-- 3:30 PM to 4:15 PM — Build Phase 3, Final Sprint ⏱️🔥, polish solutions, prep submissions and demos.
-- 4:15 PM to 4:25 PM — Submission Deadline 📩
-- 4:15 PM to 5:30 PM — Dinner Break, Project Pitch Preparation.
-- 5:00 PM to 5:30 PM — Judging Deliberation 🧑‍⚖️🗳️, judges review submissions, select Top 10.
-- 5:30 PM to 6:30 PM — Top Team Presentations 🎤🏆, 5 min pitch, 2 min Q and A, selected teams present on stage (5 to 7 min each).
-- 6:30 PM to 7:00 PM — Final Judging & Awards | Closing & Networking
+**Gesture-controlled annotation — circle concepts on the whiteboard using hand gestures**
 
-**Before You Arrive**
+![Whiteboard with a hand-drawn circle highlighting "Chloroplasts" on a photosynthesis mind map, alongside the AI tutor's transcript panel](./images/tokai-gesture-annotation.jpeg)
 
-- Bring an internet-facing laptop for this hands-on session.
-- Register an Agora Developer account in advance: <https://console.agora.io/>
+> *Annotation made using gestures*
 
-## 🎯 **Theme: Building Real-Time Voice AI Systems**
+**AI explanation — the tutor responds to questions about what's on the whiteboard**
 
-Prototype faster with AI-assisted development workflows and real-time voice tools using TRAE IDE and Agora technologies.
+![Study Tools panel showing the AI tutor's detailed explanation of chloroplasts triggered by the student's annotated question](./images/tokai-model-response.jpeg)
 
-### Suggested Areas
+---
 
-- E-Commerce & Conversational Shopping
-- Multi-modal Communication Platforms
-- Collaborative AI Assistants
-- AI-Driven Customer and Community Support
-- Smart Learning and Mentoring Systems
+## What It Does
 
-***
+The student opens a browser, presses **Start Session**, and begins talking. The AI tutor:
 
-## 🔧 **Project Requirements & Constraints**
+- **Teaches on a live whiteboard** — draws diagrams, labels, and arrows in real time as it explains concepts
+- **Listens and responds** — voice-to-voice conversation with sub-second latency via Agora Conversational AI
+- **Understands gestures** — students circle, point at, or highlight areas on the whiteboard using hand gestures; the tutor reads the annotation and responds to it
+- **Builds a concept map** — a live mind map in the sidebar grows incrementally as new concepts are introduced, showing how ideas connect
+- **Displays 3D models** — the tutor triggers floating 3D visualizations (solar system, DNA helix, human heart) for subjects that benefit from spatial understanding
+- **Generates flashcards** — key facts are turned into review cards automatically during the session
+- **Summarises the session** — a markdown summary is produced at the end
 
-### Required Technologies
+---
 
-All submissions **must** integrate the following:
+## The Problem It Solves
 
-| Technology                         | Description                                            | Documentation                                                                         |
-| ---------------------------------- | ------------------------------------------------------ | ------------------------------------------------------------------------------------- |
-| **Agora RTC SDK**                  | Low-latency real-time audio and video communication    | [Docs](https://docs.agora.io/en/interactive-live-streaming/overview/product-overview) |
-| **Agora Conversational AI Engine** | Hosted platform for building real-time voice AI agents | [Docs](https://docs.agora.io/en/conversational-ai/overview/product-overview)          |
+Quality one-on-one tutoring is expensive and inaccessible for most students. Tokai makes the Socratic teaching method — asking questions, drawing on a board, adapting to confusion in real time — available to anyone with a browser. The gesture input layer means students can interact naturally without typing or clicking, keeping focus on learning.
 
-### Rules
+---
 
-- All projects must integrate Agora technologies
-- All source code must be created during the hackathon period
-- Teams are encouraged to use TRAE IDE for development support and workflow management
-- Third-party libraries and APIs are allowed with proper attribution
-- Projects must follow data privacy and ethical AI guidelines
-- Teams must submit working demos and documentation
+## How We Built It
 
-***
+### Architecture
 
-## 📚 **Resources & Starter Code**
+```
+Browser (Next.js frontend)
+  ↕ Agora RTC — voice audio
+  ↕ Agora RTM — transcript stream
+  ↕ WebSocket — tool results (drawings, flashcards, mind map, 3D models)
+Agora Conversational AI Engine (Cloud)
+  ↕ STT → Custom LLM Server → TTS
+Custom LLM Server (Python / Flask)
+  → Gemini 3 Flash with tool-calling
+  → Broadcasts tool results to frontend via WebSocket
+Gesture Server (Python / MediaPipe)
+  → Detects hand gestures via webcam
+  → Sends gesture events to frontend WebSocket
+```
 
-Get up and running quickly with these official repositories:
+### Custom LLM Tools
 
-### Starter Repositories
+The Gemini-powered tutor has access to a suite of whiteboard and UI tools:
 
-| Repository                                                                                                                    | Description                                                   |
-| ----------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------- |
-| **[Convo AI Starter Kit](https://github.com/Devin066/Agora-Voice-AI-Hackathon-Singapore-2026/blob/main/Thought_Starters.md)** | Starter template for building real-time conversational agents |
-| **[Voice Agent Sample](https://github.com/AgoraIO-Conversational-AI/agent-samples)**                                          | Example of a voice-to-voice AI assistant using Agora          |
+| Tool | What It Does |
+|---|---|
+| `draw_shapes` | Draws on the tldraw whiteboard (arrows, labels, diagrams) |
+| `generate_flashcards` | Creates review flashcards from lesson content |
+| `update_mind_map` | Builds a live concept map in the sidebar (nodes + edges, merge/replace mode) |
+| `show_3d_visualization` | Opens a floating Three.js model viewer |
+| `generate_session_summary` | Produces a markdown lesson summary |
 
-### Documentation
+### Gesture Recognition
 
-- [Agora Developer Portal](https://docs.agora.io/)
-- [Agora Developer Console](https://console.agora.io/)
-- [Event Page (Luma)](https://luma.com/89t0ejof)
-- [TRAE IDE User Guide](https://trae.ai/docs)
+A Python server runs MediaPipe hand tracking via webcam. Recognised gestures:
 
-***
+- **Index finger draw** — freehand annotation on the whiteboard
+- **Pinch** — zoom in on the 3D model viewer
+- **Swipe** — rotate the 3D model viewer
+- **Open palm** — signals confusion; the tutor marks the current concept as a "question" node in the mind map (amber highlight)
 
-Follow the steps below to **fork, develop, and submit** your project.
+### Mind Map Panel
 
-***
+The concept map uses `@xyflow/react` (React Flow v12) with `@dagrejs/dagre` for automatic left-to-right layout. Node types — `root`, `concept`, `detail`, `question` — are colour-coded. The map grows incrementally as the tutor introduces new ideas and resets when the topic changes.
 
-## 📌 **Submission Guidelines**
+### 3D Visualization
 
-### **1. Go to Convo AI Club Website.**
+A floating, draggable Three.js r170 panel renders GLB models. The tutor triggers it via the `show_3d_visualization` tool and can highlight specific parts (e.g. `["earth", "jupiter"]`). Students interact using OrbitControls or gestures.
 
-<https://www.convoai.club/library/a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d>
+---
 
-### **2. Submit Project**
+## Tech Stack
 
-Navigate to Bottom Left and Look for button **Submit Project**.
+| Layer | Technology |
+|---|---|
+| Frontend | Next.js 16, React 19, Tailwind v4, tldraw |
+| Voice pipeline | Agora RTC SDK, Agora RTM, Agora Conversational AI Engine |
+| LLM | Gemini 3 Flash (Custom LLM Server, OpenAI-compatible format) |
+| Gesture recognition | Python, MediaPipe, asyncio WebSockets |
+| Mind map | @xyflow/react v12, @dagrejs/dagre |
+| 3D models | Three.js r170, GLTFLoader, OrbitControls |
+| Backend | Python Flask |
+| TTS | Rime (voice: Astra) |
+| ASR | Agora Ares (en-US) |
 
-![Submit Project](./images/Submission.png)
+---
 
-### **Suggested Project Structure**
+## Running Locally
 
-&#x20;
+### Prerequisites
 
-Inside your project directory, add a README.md file that explains your project architecture, key features, and how Voice AI is used in your project.
+- Node.js 20+
+- Python 3.11+
+- Agora App ID + App Certificate ([Agora Console](https://console.agora.io))
+- Gemini API key
+- Rime TTS API key
 
-***
+### Start the servers
 
-## 🏆 **Judging Criteria**
+```bash
+# 1. Simple backend (token gen + agent start/stop)
+cd simple-backend
+python3 -m venv venv && source venv/bin/activate
+pip install -r requirements-local.txt
+cp .env.example .env   # fill in your keys
+python local_server.py
 
-Projects will be evaluated based on:
+# 2. Custom LLM server (Gemini proxy + WebSocket broadcast)
+cd custom-llm-server
+pip install -r requirements.txt
+python server.py
 
-## Judging Criteria
+# 3. Gesture server (MediaPipe hand tracking)
+cd gesture-server
+pip install -r requirements.txt
+python app.py
 
-The evaluation process consists of two rounds.
+# 4. Frontend
+cd frontend
+npm install
+npm run dev
+```
 
-### Round 1: Initial Phase (Technical Screening)
+Open [http://localhost:3000](http://localhost:3000), enter your backend URL, and press **Start Session**.
 
-✅ **Integration & Use of Technologies** (30%) – Agora's Conversational AI Engine and/or RTC is meaningfully and centrally integrated into the product, as verified from the submitted codebase and demo video.
+---
 
-✅ **System Functionality** (30%) – The product works end-to-end reliably, as demonstrated through the submitted demo video and repository without team assistance.
+## Hackathon
 
-✅ **Project Architecture** (15%) – Clarity and quality of the system structure, technology stack decisions, and architectural planning, based on the repository and supporting documentation.
+**Agora Voice AI Hackathon Singapore 2026**
+- Venue: Carousell Campus
+- Date: Friday, April 10, 2026
+- Submission: [ConvoAI Club](https://www.convoai.club/library/a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d)
 
-✅ **Originality of Concept** (15%) – Evaluates the freshness and distinctiveness of the idea — judges assess whether the solution offers a novel approach to Voice AI that goes beyond common or predictable use cases.
+Required technologies used: **Agora RTC SDK** + **Agora Conversational AI Engine**
 
-✅ **Submission Compliance** (10%) – Evaluates adherence to the required GitHub repository format and boilerplate structure as specified in the submission guidelines.
+---
 
-### Round 2: Final Phase (Presentations)
+## Team
 
-✅ **Functionality & Demo Quality** (25%) – Code quality, completeness, polish, and reliability of the submission, including a fully functional and stable live demo with complete features.
-
-✅ **Technical Architecture** (15%) – System design, technology choices, and scalability approach during the live presentation and demo.
-
-✅ **Innovation and Creativity** (20%) – Creativity, uniqueness, novelty of idea combined with real-world value and relevance.
-
-✅ **Impact & Real-World Application** (10%) – Potential for solving real problems through process automation or user engagement.
-
-✅ **Commercial Viability** (10%) – Evaluates the potential of the project to be developed into a scalable and sustainable product, including market demand, target users, and business model clarity.
-
-✅ **Presentation & Pitch** (20%) – Clear, engaging delivery of problem, solution, and demo with strong storytelling and visuals.
-
-📋 See the full [Judging Rubric](./hackathon-rating-rubric.md) for detailed scoring criteria and evaluation process.
-
-***
-
-## ❓ **Need Help?**
-
-For any questions, reach out to **[Hennessy Solis](mailto:hennessy.solis@agora.io)** or join our Discord channel at [Agora Voice AI Hackathon Singapore 2026](https://discord.gg/muJsSeV2b7).
-
-For urgent technical issues, include your team name and project ID in the email subject.
-
-**Happy hacking and good luck!** 🚀
+Built by team Tokai at the Agora Voice AI Hackathon Singapore 2026.
