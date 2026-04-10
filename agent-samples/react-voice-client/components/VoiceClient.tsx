@@ -43,6 +43,16 @@ const Whiteboard = dynamic(() => import("./Whiteboard"), {
   ),
 })
 
+// Dynamic import for GestureCamera (client-side only)
+const GestureCamera = dynamic(() => import("./GestureCamera").then(mod => ({ default: mod.GestureCamera })), {
+  ssr: false,
+  loading: () => (
+    <div className="flex items-center justify-center h-32 bg-surface-container-highest rounded-xl">
+      <span className="text-on-surface-variant text-sm">Loading camera...</span>
+    </div>
+  ),
+})
+
 const DEFAULT_BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8082"
 const DEFAULT_PROFILE = process.env.NEXT_PUBLIC_DEFAULT_PROFILE || "VOICE"
 const THYMIA_ENABLED = process.env.NEXT_PUBLIC_ENABLE_THYMIA === "true"
@@ -641,6 +651,12 @@ export function VoiceClient() {
                 {viewModeLabels[mode]}
               </button>
             ))}
+          </div>
+
+          {/* Hand Gesture Camera */}
+          <div className="mb-6">
+            <h3 className="text-sm font-bold text-primary mb-2">Hand Gestures</h3>
+            <GestureCamera editor={editorRef.current} />
           </div>
 
           {/* Transcript Section */}
