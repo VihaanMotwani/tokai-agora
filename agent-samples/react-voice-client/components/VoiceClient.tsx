@@ -15,10 +15,12 @@ import {
   Video,
   VideoOff,
   Sparkles,
+  Share2,
 } from "lucide-react"
 import { useAgoraVoiceClient } from "@/hooks/useAgoraVoiceClient"
 import { useWhiteboard, type ViewMode } from "@/hooks/useWhiteboard"
 import { useDiagramGenerator } from "@/hooks/useDiagramGenerator"
+import { useCanvasAnalysis } from "@/hooks/useCanvasAnalysis"
 import dynamic from "next/dynamic"
 import { IconButton } from "@agora/agent-ui-kit"
 import { SettingsDialog, SessionPanel } from "@agora/agent-ui-kit"
@@ -99,6 +101,9 @@ export function VoiceClient() {
   // Whiteboard state
   const whiteboard = useWhiteboard()
 
+  // Canvas analysis for context-aware responses
+  const canvasAnalysis = useCanvasAnalysis()
+
   // Read URL parameters on mount
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -144,26 +149,37 @@ export function VoiceClient() {
 
   // Track processed message IDs to avoid duplicate diagram generation
   const processedMessageIds = useRef<Set<string>>(new Set())
+  const isGeneratingDiagram = useRef<boolean>(false)
 
   // Process messages for diagram generation
   useEffect(() => {
-    if (messageList.length > 0) {
-      const lastMessage = messageList[messageList.length - 1]
-      const messageId = `${lastMessage.turn_id}-${lastMessage.uid}`
+    if (messageList.length === 0) return
 
-      // Skip if already processed
-      if (processedMessageIds.current.has(messageId)) {
-        return
-      }
+    const lastMessage = messageList[messageList.length - 1]
+    const messageId = `${lastMessage.turn_id}-${lastMessage.uid}`
+
+    // Skip if already processed or currently generating
+    if (processedMessageIds.current.has(messageId) || isGeneratingDiagram.current) {
+      return
+    }
+
+    const isAgent = agentUid ? lastMessage.uid === agentUid : false
+
+    // Skip context messages (from Share with Tutor)
+    if (lastMessage.text.startsWith("[Looking at canvas:") || lastMessage.text.startsWith("[Canvas")) {
       processedMessageIds.current.add(messageId)
+      return
+    }
 
-      const isAgent = agentUid ? lastMessage.uid === agentUid : false
-      diagramGenerator.addToHistory(lastMessage.text, isAgent ? "agent" : "user")
+    processedMessageIds.current.add(messageId)
+    diagramGenerator.addToHistory(lastMessage.text, isAgent ? "agent" : "user")
 
-      // Auto-generate diagram on user messages with trigger words
-      if (!isAgent && diagramGenerator.shouldGenerateDiagram(lastMessage.text)) {
-        diagramGenerator.generate(lastMessage.text)
-      }
+    // Auto-generate diagram on user messages with trigger words
+    if (!isAgent && diagramGenerator.shouldGenerateDiagram(lastMessage.text)) {
+      isGeneratingDiagram.current = true
+      diagramGenerator.generate(lastMessage.text).finally(() => {
+        isGeneratingDiagram.current = false
+      })
     }
   }, [messageList, agentUid, diagramGenerator])
 
@@ -328,10 +344,48 @@ export function VoiceClient() {
     }
   }
 
+  const [isAnalyzingCanvas, setIsAnalyzingCanvas] = useState(false)
+  const [isSharingCanvas, setIsSharingCanvas] = useState(false)
+
+  // Manual share canvas context with tutor
+  const handleShareCanvas = async () => {
+    if (!isConnected || !canvasAnalysis.hasContent()) return
+
+    setIsSharingCanvas(true)
+    try {
+      const description = await canvasAnalysis.analyzeCanvas()
+      if (description) {
+        // Send just the context - the user will ask the question via voice
+        await sendMessage(`[Canvas context: ${description}]`)
+      }
+    } catch (error) {
+      console.error("Error sharing canvas:", error)
+    } finally {
+      setIsSharingCanvas(false)
+    }
+  }
+
   const handleSendMessage = async () => {
     if (!chatMessage.trim() || !isConnected) return
 
-    const success = await sendMessage(chatMessage)
+    let messageToSend = chatMessage
+
+    // If canvas has content, analyze it and add context to the message
+    if (canvasAnalysis.hasContent()) {
+      setIsAnalyzingCanvas(true)
+      try {
+        const canvasDescription = await canvasAnalysis.analyzeCanvas()
+        if (canvasDescription) {
+          messageToSend = `[Context: ${canvasDescription}] ${chatMessage}`
+        }
+      } catch (error) {
+        console.error("Error analyzing canvas:", error)
+      } finally {
+        setIsAnalyzingCanvas(false)
+      }
+    }
+
+    const success = await sendMessage(messageToSend)
     if (success) {
       setChatMessage("")
     }
@@ -358,7 +412,8 @@ export function VoiceClient() {
     editorRef.current = editor
     whiteboard.setEditor(editor)
     diagramGenerator.setEditor(editor)
-  }, [whiteboard, diagramGenerator])
+    canvasAnalysis.setEditor(editor)
+  }, [whiteboard, diagramGenerator, canvasAnalysis])
 
   // View mode labels
   const viewModeLabels: Record<ViewMode, string> = {
@@ -541,6 +596,24 @@ export function VoiceClient() {
             <div className="w-px h-6 bg-outline-variant/30 my-auto mx-1" />
             <button className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-surface-container-high transition-colors text-primary">
               <ZoomIn className="w-5 h-5" />
+            </button>
+            <div className="w-px h-6 bg-outline-variant/30 my-auto mx-1" />
+            <button
+              onClick={handleShareCanvas}
+              disabled={isSharingCanvas || !canvasAnalysis.hasContent()}
+              className={cn(
+                "flex items-center gap-2 px-4 py-2 rounded-full font-medium text-sm transition-colors",
+                canvasAnalysis.hasContent()
+                  ? "bg-secondary text-on-secondary hover:bg-secondary/90"
+                  : "bg-surface-container-high text-on-surface-variant/50 cursor-not-allowed"
+              )}
+            >
+              {isSharingCanvas ? (
+                <div className="w-4 h-4 border-2 border-on-secondary border-t-transparent rounded-full animate-spin" />
+              ) : (
+                <Share2 className="w-4 h-4" />
+              )}
+              <span>{isSharingCanvas ? "Sharing..." : "Share with Tutor"}</span>
             </button>
           </div>
         </section>

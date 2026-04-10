@@ -13,6 +13,7 @@
     "@agora/agent-ui-kit": "github:AgoraIO-Conversational-AI/agent-ui-kit#main",
     "@google/generative-ai": "^0.24.1",
     "@lottiefiles/dotlottie-react": "^0.17.10",
+    "@mediapipe/tasks-vision": "^0.10.34",
     "@radix-ui/react-dialog": "^1.1.15",
     "@radix-ui/react-dropdown-menu": "^2.1.16",
     "@radix-ui/react-popover": "^1.1.15",
