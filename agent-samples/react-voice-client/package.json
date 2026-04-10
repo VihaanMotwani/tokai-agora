@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@agora/agent-ui-kit": "github:AgoraIO-Conversational-AI/agent-ui-kit#main",
+    "@google/generative-ai": "^0.24.1",
     "@lottiefiles/dotlottie-react": "^0.17.10",
     "@radix-ui/react-dialog": "^1.1.15",
     "@radix-ui/react-dropdown-menu": "^2.1.16",
@@ -28,11 +29,13 @@
     "cmdk": "^1.1.1",
     "dompurify": "^3.3.3",
     "lucide-react": "^0.561.0",
+    "nanoid": "^5.1.7",
     "next": "16.1.6",
     "next-themes": "^0.4.6",
     "react": "19.2.1",
     "react-dom": "19.2.1",
-    "tailwind-merge": "^3.5.0"
+    "tailwind-merge": "^3.5.0",
+    "tldraw": "^4.5.8"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",

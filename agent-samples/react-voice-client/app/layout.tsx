@@ -1,21 +1,23 @@
 import type { Metadata } from "next"
-import { Geist, Geist_Mono } from "next/font/google"
+import { Manrope, Inter } from "next/font/google"
 import { ThemeProvider } from "next-themes"
 import "./globals.css"
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const manrope = Manrope({
+  variable: "--font-headline",
   subsets: ["latin"],
+  weight: ["400", "500", "700", "800"],
 })
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const inter = Inter({
+  variable: "--font-body",
   subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
 })
 
 export const metadata: Metadata = {
-  title: "Agora Convo AI Agent",
-  description: "Voice AI Client powered by Agora",
+  title: "Tokai | The Atelier",
+  description: "AI-powered Socratic learning platform",
 }
 
 export default function RootLayout({
@@ -25,8 +27,8 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-        <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false}>
+      <body className={`${manrope.variable} ${inter.variable} antialiased font-body`}>
+        <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false}>
           {children}
         </ThemeProvider>
       </body>
