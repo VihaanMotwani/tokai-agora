@@ -157,9 +157,12 @@ export function VoiceClient() {
     },
   })
 
-  // Track processed message IDs to avoid duplicate diagram generation
-  const processedMessageIds = useRef<Set<string>>(new Set())
+  // Track processed message content hashes to avoid duplicate diagram generation
+  // We use text length as part of the key to detect when streaming text is complete
+  const processedMessagesRef = useRef<Map<string, number>>(new Map()) // messageId -> last processed text length
   const isGeneratingDiagram = useRef<boolean>(false)
+  const pendingTriggerRef = useRef<{ messageId: string; text: string; isAgent: boolean } | null>(null)
+  const stableTextTimeoutRef = useRef<NodeJS.Timeout | null>(null)
 
   // Process messages for diagram generation
   useEffect(() => {
@@ -167,31 +170,74 @@ export function VoiceClient() {
 
     const lastMessage = messageList[messageList.length - 1]
     const messageId = `${lastMessage.turn_id}-${lastMessage.uid}`
-
-    // Skip if already processed or currently generating
-    if (processedMessageIds.current.has(messageId) || isGeneratingDiagram.current) {
-      return
-    }
-
     const isAgent = agentUid ? lastMessage.uid === agentUid : false
 
     // Skip context messages (from Share with Tutor)
     if (lastMessage.text.startsWith("[Looking at canvas:") || lastMessage.text.startsWith("[Canvas")) {
-      processedMessageIds.current.add(messageId)
       return
     }
 
-    processedMessageIds.current.add(messageId)
-    diagramGenerator.addToHistory(lastMessage.text, isAgent ? "agent" : "user")
+    // Check if text is still streaming (length changed from last time)
+    const lastProcessedLength = processedMessagesRef.current.get(messageId) || 0
+    const currentLength = lastMessage.text.length
 
-    // Auto-generate diagram on user messages with trigger words
-    if (!isAgent && diagramGenerator.shouldGenerateDiagram(lastMessage.text)) {
-      isGeneratingDiagram.current = true
-      diagramGenerator.generate(lastMessage.text).finally(() => {
-        isGeneratingDiagram.current = false
-      })
+    if (currentLength === lastProcessedLength) {
+      // Text hasn't changed, skip
+      return
     }
+
+    // Update the last seen length
+    processedMessagesRef.current.set(messageId, currentLength)
+
+    // Clear any pending timeout
+    if (stableTextTimeoutRef.current) {
+      clearTimeout(stableTextTimeoutRef.current)
+    }
+
+    // Check for triggers
+    const hasTrigger = diagramGenerator.shouldGenerateDiagram(lastMessage.text)
+    const agentWillDraw = isAgent && lastMessage.text.toLowerCase().includes("let me draw")
+
+    if ((!isAgent && hasTrigger) || agentWillDraw) {
+      // Store as pending - we'll process once text stabilizes
+      pendingTriggerRef.current = { messageId, text: lastMessage.text, isAgent }
+
+      // Wait 500ms for text to stabilize before generating
+      stableTextTimeoutRef.current = setTimeout(() => {
+        const pending = pendingTriggerRef.current
+        if (!pending || isGeneratingDiagram.current) return
+
+        console.log("[Diagram] Text stabilized, generating for:", pending.text.substring(0, 50) + "...")
+        console.log("[Diagram] isConfigured:", diagramGenerator.isConfigured)
+
+        isGeneratingDiagram.current = true
+        pendingTriggerRef.current = null
+
+        diagramGenerator.generate(pending.text)
+          .then((result) => {
+            console.log("[Diagram] Generation result:", result)
+          })
+          .catch((err) => {
+            console.error("[Diagram] Generation error:", err)
+          })
+          .finally(() => {
+            isGeneratingDiagram.current = false
+          })
+      }, 500)
+    }
+
+    // Always add to history (for context)
+    diagramGenerator.addToHistory(lastMessage.text, isAgent ? "agent" : "user")
   }, [messageList, agentUid, diagramGenerator])
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (stableTextTimeoutRef.current) {
+        clearTimeout(stableTextTimeoutRef.current)
+      }
+    }
+  }, [])
 
   // RTM event source adapter for Thymia hooks
   const rtmSource = useMemo<RTMEventSource | null>(() => {
@@ -428,8 +474,6 @@ export function VoiceClient() {
   // View mode labels
   const viewModeLabels: Record<ViewMode, string> = {
     whiteboard: "Whiteboard",
-    mindmap: "Mind Map",
-    "3d": "3D View",
   }
 
   if (!isConnected) {
@@ -635,23 +679,7 @@ export function VoiceClient() {
             <p className="text-on-surface-variant/60 text-sm font-medium">Active Session Analysis</p>
           </div>
 
-          {/* View Mode Toggle */}
-          <div className="bg-surface-container-high p-1.5 rounded-full flex items-center mb-6">
-            {(["whiteboard", "mindmap", "3d"] as ViewMode[]).map((mode) => (
-              <button
-                key={mode}
-                onClick={() => whiteboard.setViewMode(mode)}
-                className={cn(
-                  "flex-1 py-2.5 px-3 rounded-full text-xs font-bold font-headline transition-all",
-                  whiteboard.viewMode === mode
-                    ? "bg-surface-container-lowest text-secondary shadow-sm"
-                    : "text-on-surface-variant/50 hover:bg-white/30"
-                )}
-              >
-                {viewModeLabels[mode]}
-              </button>
-            ))}
-          </div>
+          {/* View Mode Toggle - removed, only whiteboard mode */}
 
           {/* Hand Gesture Camera */}
           <div className="mb-6">
