@@ -7,6 +7,13 @@ Tokai is an accessibility-first AI tutoring platform powered by Agora Conversati
 Built at the **Agora Voice AI Hackathon Singapore 2026**.
 
 ---
+## Demo
+
+
+
+https://github.com/user-attachments/assets/c5897f19-ef43-4a84-9f00-4c4dcc1c9c78
+
+
 
 ## Screenshots
 
